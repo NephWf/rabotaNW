@@ -6,49 +6,89 @@
   <title>Прогресс по работе</title>
   <meta name="color-scheme" content="light" />
   <meta name="theme-color" content="#f3efe6" />
-  <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-title" content="Работа" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
   <link rel="manifest" href="manifest.json" />
   <link rel="apple-touch-icon" href="icon-180.png" />
   <link rel="icon" type="image/svg+xml" href="favicon.svg" />
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Unbounded:wght@500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <div class="app">
-    <header class="topbar">
+  <div class="wrap">
+    <header class="top">
       <div>
-        <p class="eyebrow">Работа</p>
-        <h1 id="page-title">Месяц</h1>
+        <h1>Прогресс по работе</h1>
+        <p class="sub">Как в таблице: каждый засчитанный день имеет норму, «-» — выходной и не входит в план, пустая ячейка — день ещё не закрыт.</p>
+      </div>
+      <div class="controls">
+        <button class="install-banner hidden" id="btn-install" type="button">Установить на телефон</button>
+        <label class="norm">Норма <input id="norm" type="number" min="1" step="1" value="200" /> / день</label>
+        <div class="nav">
+          <button id="prev-month" type="button" aria-label="Предыдущий месяц">‹</button>
+          <strong id="month-label">Сентябрь 2026</strong>
+          <button id="next-month" type="button" aria-label="Следующий месяц">›</button>
+        </div>
       </div>
     </header>
-    <button class="install-banner hidden" id="btn-install" type="button">Установить на телефон</button>
-    <section class="date-row">
-      <button class="icon-btn ghost" id="prev-month" type="button" aria-label="Предыдущий месяц">‹</button>
-      <strong id="month-label">Октябрь 2026</strong>
-      <button class="icon-btn ghost" id="next-month" type="button" aria-label="Следующий месяц">›</button>
-    </section>
-    <main class="content" id="view-month"></main>
-    <main class="content hidden" id="view-days"></main>
-    <main class="content hidden" id="view-stats"></main>
-    <main class="content hidden" id="view-more"></main>
-    <nav class="tabbar">
-      <button class="tab active" data-view="month" type="button"><span>▣</span>Месяц</button>
-      <button class="tab" data-view="days" type="button"><span>☰</span>Дни</button>
-      <button class="tab" data-view="stats" type="button"><span>▤</span>Сводка</button>
-      <button class="tab" data-view="more" type="button"><span>●</span>Ещё</button>
-    </nav>
+
+    <main id="view-month">
+      <section class="grid">
+        <article class="card">
+          <p class="kicker">Итог месяца</p>
+          <p class="ratio" id="ratio">0<span>/0</span></p>
+          <div class="status wait" id="status">Пров. в день: 0</div>
+          <div class="bar" aria-hidden="true"><i id="bar"></i></div>
+          <div class="meta">
+            <span>Сумма <b id="sum">0</b></span>
+            <span>План <b id="plan">0</b></span>
+            <span>В зачёте <b id="counted">0</b></span>
+            <span>Пустых <b id="empty">0</b></span>
+            <span>Выходных <b id="offs">0</b></span>
+          </div>
+          <div class="formula" id="formula"></div>
+          <p class="note" id="hint"></p>
+        </article>
+        <article class="card">
+          <div class="side-title">
+            <p class="kicker">По дням к норме</p>
+            <span class="note" id="chart-hint" style="margin:0"></span>
+          </div>
+          <div class="chart" id="chart"></div>
+          <div class="footer-actions">
+            <button class="ghost" id="weekends" type="button">Выходные как «-»</button>
+            <button class="ghost" id="export" type="button">Скачать JSON</button>
+            <button class="ghost" id="import" type="button">Загрузить JSON</button>
+            <button class="primary" id="reset-month" type="button">Сбросить месяц</button>
+          </div>
+        </article>
+      </section>
+      <section class="card" style="margin-top:16px">
+        <div class="side-title">
+          <p class="kicker">Дни</p>
+          <span class="note" style="margin:0">Число — факт. «-» — выходной. Пусто — день ещё открыт.</span>
+        </div>
+        <div class="days" id="days"></div>
+      </section>
+    </main>
+
+    <main class="hidden" id="view-more">
+      <section class="card">
+        <p class="kicker">Данные</p>
+        <p class="note">Хранятся только на этом устройстве.</p>
+        <div class="footer-actions">
+          <button class="ghost" id="reset-all" type="button">Сбросить всё</button>
+        </div>
+      </section>
+    </main>
   </div>
+  <nav class="tabbar">
+    <button class="tab active" data-view="month" type="button">Месяц</button>
+    <button class="tab" data-view="more" type="button">Ещё</button>
+  </nav>
   <div class="sheet hidden" id="sheet">
-    <div class="sheet-backdrop" id="sheet-close"></div>
-    <div class="sheet-panel">
-      <div class="sheet-handle"></div>
-      <div id="sheet-body"></div>
-    </div>
+    <button class="sheet-backdrop" id="sheet-close" type="button" aria-label="Закрыть"></button>
+    <div class="sheet-panel"><div class="sheet-handle"></div><div id="sheet-body"></div></div>
   </div>
   <input id="import-file" class="hidden" type="file" accept="application/json" />
   <script src="app.js"></script>

@@ -86,118 +86,99 @@ function render() {
   const rec = record();
   const s = summarize();
   document.getElementById("month-label").textContent = MONTHS[cursor.m] + " " + cursor.y;
-  document.getElementById("page-title").textContent = { month: "Месяц", days: "Дни", stats: "Сводка", more: "Ещё" }[view];
+  document.getElementById("norm").value = rec.norm;
   document.querySelectorAll(".tab").forEach((tab) => tab.classList.toggle("active", tab.dataset.view === view));
   document.getElementById("view-month").classList.toggle("hidden", view !== "month");
-  document.getElementById("view-days").classList.toggle("hidden", view !== "days");
-  document.getElementById("view-stats").classList.toggle("hidden", view !== "stats");
   document.getElementById("view-more").classList.toggle("hidden", view !== "more");
-  const pct = s.plan ? Math.min(1, s.sum / s.plan) : 0;
-  document.getElementById("view-month").innerHTML = `
-    <section class="card hero">
-      <div class="ring-wrap">
-        <svg class="ring" viewBox="0 0 140 140" aria-hidden="true">
-          <circle class="ring-bg" cx="70" cy="70" r="54"></circle>
-          <circle class="ring-fg" cx="70" cy="70" r="54" style="stroke-dashoffset:${339 * (1 - pct)};stroke:${s.kind === "bad" ? "var(--bad)" : "var(--accent)"}"></circle>
-        </svg>
-        <div class="ring-center"><strong>${s.sum}</strong><span>из ${s.plan}</span></div>
-      </div>
-      <div>
-        <div class="meta"><span class="muted">Норма</span><b>${rec.norm}</b></div>
-        <div class="meta"><span class="muted">В зачёте</span><b>${s.counted}</b></div>
-        <div class="meta"><span class="muted">Пустых</span><b>${s.blanks}</b></div>
-        <div class="meta"><span class="muted">Выходных</span><b>${s.offs}</b></div>
-      </div>
-    </section>
-    <span class="status ${s.kind}">${s.statusText}</span>
-    <p class="muted">${s.blanks ? "Пустые дни ещё открыты. «Пров. в день» — сколько нужно сделать в каждый из них, чтобы закрыть план." : "Все дни закрыты. Излишек — сумма минус план."}</p>`;
-  document.getElementById("view-days").innerHTML = s.rows.map((row) => {
+  document.getElementById("ratio").innerHTML = s.sum + "<span>/" + s.plan + "</span>";
+  const status = document.getElementById("status");
+  status.textContent = s.statusText;
+  status.className = "status " + s.kind;
+  document.getElementById("bar").style.width = (s.plan ? Math.min(100, Math.round(s.sum / s.plan * 100)) : 0) + "%";
+  document.getElementById("sum").textContent = s.sum;
+  document.getElementById("plan").textContent = s.plan;
+  document.getElementById("counted").textContent = s.counted;
+  document.getElementById("empty").textContent = s.blanks;
+  document.getElementById("offs").textContent = s.offs;
+  document.getElementById("formula").textContent = "СУММ / (не «-» × норма) = " + s.ratio + "\n" + s.statusText;
+  document.getElementById("hint").textContent = s.blanks
+    ? "Пока есть пустые дни, вторая формула показывает, сколько нужно делать в каждый оставшийся день, чтобы закрыть план."
+    : "Все дни закрыты. Излишек — это сумма минус план (засчитанные дни × норма).";
+  const chart = document.getElementById("chart");
+  chart.innerHTML = "";
+  s.rows.filter((row) => row.raw !== "-").forEach((row) => {
+    const col = document.createElement("div");
+    col.className = "col";
+    const bar = document.createElement("b");
+    const val = typeof row.raw === "number" ? row.raw : 0;
+    bar.style.height = Math.max(4, Math.min(100, val / (rec.norm * 1.4) * 100)) + "%";
+    if (typeof row.raw === "number") bar.className = row.raw >= rec.norm ? "over" : "under";
+    const label = document.createElement("span");
+    label.textContent = row.d;
+    col.append(bar, label);
+    chart.appendChild(col);
+  });
+  document.getElementById("chart-hint").textContent = "только дни в зачёте";
+  document.getElementById("days").innerHTML = s.rows.map((row) => {
     const delta = typeof row.raw === "number" ? row.raw - rec.norm : null;
-    return `<div class="card day-row ${row.raw === "-" ? "off" : ""}">
-      <div><b>${String(row.d).padStart(2, "0")}</b><div class="muted">${WEEKDAYS[row.wd]}</div></div>
+    const deltaClass = delta === null ? "na" : delta >= 0 ? "up" : "down";
+    const deltaText = delta === null ? (row.raw === "-" ? "выходной" : "открыт") : (delta > 0 ? "+" : "") + delta;
+    return `<div class="day ${row.raw === "-" ? "off" : ""}">
+      <div class="date">${String(row.d).padStart(2, "0")}.${String(cursor.m + 1).padStart(2, "0")}</div>
+      <div class="wd">${WEEKDAYS[row.wd]}</div>
       <input data-day="${row.id}" value="${row.raw === "" ? "" : row.raw}" placeholder="пусто" inputmode="decimal" />
-      <div style="display:flex;align-items:center;gap:6px">
-        <span class="delta ${delta === null ? "" : delta >= 0 ? "up" : "down"}">${delta === null ? (row.raw === "-" ? "вых" : "—") : (delta > 0 ? "+" : "") + delta}</span>
-        <button class="mini ${row.raw === "-" ? "on" : ""}" data-off="${row.id}" type="button" aria-label="Выходной">−</button>
-      </div>
+      <div class="delta ${deltaClass}">${deltaText}</div>
+      <button class="mini ${row.raw === "-" ? "on" : ""}" data-off="${row.id}" type="button" title="Выходной">−</button>
     </div>`;
   }).join("");
-  const bars = s.rows.filter((r) => r.raw !== "-").map((r) => {
-    const val = typeof r.raw === "number" ? r.raw : 0;
-    const h = Math.max(6, Math.min(100, val / (rec.norm * 1.4) * 100));
-    return `<i style="height:${h}%" title="${r.d}"></i>`;
-  }).join("");
-  document.getElementById("view-stats").innerHTML = `
-    <section class="card"><h2>${s.ratio}</h2><p class="muted">${s.statusText}</p><div class="bars">${bars}</div></section>
-    <section class="card"><p class="muted">Сумма делится на число дней, которые не отмечены как «-», умноженное на норму. Пустая ячейка входит в план и в «Пров. в день».</p><div class="formula">${s.ratio}<br>${s.statusText}</div></section>`;
-  document.getElementById("view-more").innerHTML = `
-    <section class="card">
-      <h2>Норма</h2>
-      <label>В день<input id="norm" type="number" min="1" value="${rec.norm}" /></label>
-      <button class="btn" id="weekends" type="button">Выходные как «-»</button>
-    </section>
-    <section class="card">
-      <h2>Данные</h2>
-      <p class="muted">Хранятся только на этом устройстве.</p>
-      <button class="btn" id="export" type="button">Скачать JSON</button>
-      <button class="btn" id="import" type="button">Загрузить JSON</button>
-      <button class="btn danger" id="reset-month" type="button">Сбросить месяц</button>
-      <button class="btn" id="reset-all" type="button">Сбросить всё</button>
-    </section>`;
-  bind();
+  bindDays();
 }
-function bind() {
+function bindDays() {
   document.querySelectorAll("[data-day]").forEach((input) => input.addEventListener("change", () => setDay(input.dataset.day, input.value)));
   document.querySelectorAll("[data-off]").forEach((button) => button.addEventListener("click", () => {
     const id = button.dataset.off;
     setDay(id, record().days[id] === "-" ? "" : "-");
   }));
-  const norm = document.getElementById("norm");
-  if (norm) norm.addEventListener("change", () => {
-    const n = Number(norm.value);
-    record().norm = Number.isFinite(n) && n > 0 ? n : 200;
-    save();
-    render();
-  });
-  const weekends = document.getElementById("weekends");
-  if (weekends) weekends.addEventListener("click", () => {
-    const rec = record();
-    const total = daysInMonth(cursor.y, cursor.m);
-    for (let d = 1; d <= total; d++) {
-      const date = new Date(cursor.y, cursor.m, d);
-      if (date.getDay() === 0 || date.getDay() === 6) rec.days[iso(cursor.y, cursor.m, d)] = "-";
-    }
-    save();
-    render();
-  });
-  const exp = document.getElementById("export");
-  if (exp) exp.addEventListener("click", () => {
-    const a = document.createElement("a");
-    a.href = URL.createObjectURL(new Blob([JSON.stringify(db, null, 2)], { type: "application/json" }));
-    a.download = "rabota.json";
-    a.click();
-  });
-  const imp = document.getElementById("import");
-  if (imp) imp.addEventListener("click", () => document.getElementById("import-file").click());
-  const resetMonth = document.getElementById("reset-month");
-  if (resetMonth) resetMonth.addEventListener("click", () => {
-    if (!confirm("Сбросить текущий месяц?")) return;
-    db[monthKey(cursor.y, cursor.m)] = { norm: 200, days: {} };
-    save();
-    render();
-  });
-  const resetAll = document.getElementById("reset-all");
-  if (resetAll) resetAll.addEventListener("click", () => {
-    if (!confirm("Удалить все данные приложения?")) return;
-    db = {};
-    save();
-    render();
-  });
 }
 function openSheet(html) {
   document.getElementById("sheet-body").innerHTML = html;
   document.getElementById("sheet").classList.remove("hidden");
 }
+document.getElementById("norm").addEventListener("change", () => {
+  const n = Number(document.getElementById("norm").value);
+  record().norm = Number.isFinite(n) && n > 0 ? n : 200;
+  save();
+  render();
+});
+document.getElementById("weekends").addEventListener("click", () => {
+  const rec = record();
+  const total = daysInMonth(cursor.y, cursor.m);
+  for (let d = 1; d <= total; d++) {
+    const date = new Date(cursor.y, cursor.m, d);
+    if (date.getDay() === 0 || date.getDay() === 6) rec.days[iso(cursor.y, cursor.m, d)] = "-";
+  }
+  save();
+  render();
+});
+document.getElementById("export").addEventListener("click", () => {
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob([JSON.stringify(db, null, 2)], { type: "application/json" }));
+  a.download = "rabota.json";
+  a.click();
+});
+document.getElementById("import").addEventListener("click", () => document.getElementById("import-file").click());
+document.getElementById("reset-month").addEventListener("click", () => {
+  if (!confirm("Сбросить текущий месяц?")) return;
+  db[monthKey(cursor.y, cursor.m)] = { norm: 200, days: {} };
+  save();
+  render();
+});
+document.getElementById("reset-all").addEventListener("click", () => {
+  if (!confirm("Удалить все данные приложения?")) return;
+  db = {};
+  save();
+  render();
+});
 document.getElementById("prev-month").addEventListener("click", () => {
   const date = new Date(cursor.y, cursor.m - 1, 1);
   cursor = { y: date.getFullYear(), m: date.getMonth() };
