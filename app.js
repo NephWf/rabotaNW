@@ -100,33 +100,39 @@ function render() {
   document.getElementById("counted").textContent = s.counted;
   document.getElementById("empty").textContent = s.blanks;
   document.getElementById("offs").textContent = s.offs;
+  const days = document.getElementById("days");
+  if (days) {
+    days.innerHTML = s.rows.map((row) => {
+      const delta = typeof row.raw === "number" ? row.raw - rec.norm : null;
+      const deltaClass = delta === null ? "na" : delta >= 0 ? "up" : "down";
+      const deltaText = delta === null ? (row.raw === "-" ? "выходной" : "открыт") : (delta > 0 ? "+" : "") + delta;
+      return `<div class="day ${row.raw === "-" ? "off" : ""}">
+        <div class="date">${String(row.d).padStart(2, "0")}.${String(cursor.m + 1).padStart(2, "0")}</div>
+        <div class="wd">${WEEKDAYS[row.wd]}</div>
+        <input data-day="${row.id}" value="${row.raw === "" ? "" : row.raw}" placeholder="пусто" inputmode="decimal" />
+        <div class="delta ${deltaClass}">${deltaText}</div>
+        <button class="mini ${row.raw === "-" ? "on" : ""}" data-off="${row.id}" type="button" title="Выходной">−</button>
+      </div>`;
+    }).join("");
+  }
   const chart = document.getElementById("chart");
-  chart.innerHTML = "";
-  s.rows.filter((row) => row.raw !== "-").forEach((row) => {
-    const col = document.createElement("div");
-    col.className = "col";
-    const bar = document.createElement("b");
-    const val = typeof row.raw === "number" ? row.raw : 0;
-    bar.style.height = Math.max(4, Math.min(100, val / (rec.norm * 1.4) * 100)) + "%";
-    if (typeof row.raw === "number") bar.className = row.raw >= rec.norm ? "over" : "under";
-    const label = document.createElement("span");
-    label.textContent = row.d;
-    col.append(bar, label);
-    chart.appendChild(col);
-  });
-  document.getElementById("chart-hint").textContent = "только дни в зачёте";
-  document.getElementById("days").innerHTML = s.rows.map((row) => {
-    const delta = typeof row.raw === "number" ? row.raw - rec.norm : null;
-    const deltaClass = delta === null ? "na" : delta >= 0 ? "up" : "down";
-    const deltaText = delta === null ? (row.raw === "-" ? "выходной" : "открыт") : (delta > 0 ? "+" : "") + delta;
-    return `<div class="day ${row.raw === "-" ? "off" : ""}">
-      <div class="date">${String(row.d).padStart(2, "0")}.${String(cursor.m + 1).padStart(2, "0")}</div>
-      <div class="wd">${WEEKDAYS[row.wd]}</div>
-      <input data-day="${row.id}" value="${row.raw === "" ? "" : row.raw}" placeholder="пусто" inputmode="decimal" />
-      <div class="delta ${deltaClass}">${deltaText}</div>
-      <button class="mini ${row.raw === "-" ? "on" : ""}" data-off="${row.id}" type="button" title="Выходной">−</button>
-    </div>`;
-  }).join("");
+  if (chart) {
+    chart.innerHTML = "";
+    s.rows.filter((row) => row.raw !== "-").forEach((row) => {
+      const col = document.createElement("div");
+      col.className = "col";
+      const bar = document.createElement("b");
+      const val = typeof row.raw === "number" ? row.raw : 0;
+      bar.style.height = Math.max(8, Math.min(100, (val || rec.norm * 0.15) / (rec.norm * 1.4) * 100)) + "%";
+      if (typeof row.raw === "number") bar.className = row.raw >= rec.norm ? "over" : "under";
+      const label = document.createElement("span");
+      label.textContent = row.d;
+      col.append(bar, label);
+      chart.appendChild(col);
+    });
+  }
+  const hint = document.getElementById("chart-hint");
+  if (hint) hint.textContent = "только дни в зачёте";
   bindDays();
 }
 function bindDays() {
