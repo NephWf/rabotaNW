@@ -102,12 +102,19 @@ function render() {
   const days = document.getElementById("days");
   if (days) {
     days.innerHTML = s.rows.map((row) => {
+      if (row.weekend && row.raw !== "-") {
+        return `<div class="day weekend banner">
+          <div class="date">${String(row.d).padStart(2, "0")}.${String(cursor.m + 1).padStart(2, "0")}</div>
+          <div class="wd">${WEEKDAYS[row.wd]}</div>
+          <div class="weekend-label">выходной</div>
+        </div>`;
+      }
       const delta = typeof row.raw === "number" ? row.raw - rec.norm : null;
       const deltaClass = delta === null ? "na" : delta >= 0 ? "up" : "down";
       const deltaText = row.raw === "-" ? "не в плане" : delta === null ? "открыт" : (delta > 0 ? "+" : "") + delta;
       return `<div class="day ${row.weekend ? "weekend" : ""} ${row.raw === "-" ? "dash" : ""}">
         <div class="date">${String(row.d).padStart(2, "0")}.${String(cursor.m + 1).padStart(2, "0")}</div>
-        <div class="wd">${row.weekend ? "выходной" : WEEKDAYS[row.wd]}</div>
+        <div class="wd">${WEEKDAYS[row.wd]}</div>
         <input data-day="${row.id}" value="${row.raw === "" ? "" : row.raw}" placeholder="пусто" inputmode="decimal" />
         <div class="delta ${deltaClass}">${deltaText}</div>
         <button class="mini ${row.raw === "-" ? "on" : ""}" data-off="${row.id}" type="button">прочерк</button>
