@@ -98,7 +98,7 @@ function render() {
       <div class="ring-wrap">
         <svg class="ring" viewBox="0 0 140 140" aria-hidden="true">
           <circle class="ring-bg" cx="70" cy="70" r="54"></circle>
-          <circle class="ring-fg" cx="70" cy="70" r="54" style="stroke-dashoffset:${339 * (1 - pct)};stroke:${s.kind === "bad" ? "var(--coral)" : "var(--mint)"}"></circle>
+          <circle class="ring-fg" cx="70" cy="70" r="54" style="stroke-dashoffset:${339 * (1 - pct)};stroke:${s.kind === "bad" ? "var(--bad)" : "var(--accent)"}"></circle>
         </svg>
         <div class="ring-center"><strong>${s.sum}</strong><span>из ${s.plan}</span></div>
       </div>
@@ -129,7 +129,7 @@ function render() {
   }).join("");
   document.getElementById("view-stats").innerHTML = `
     <section class="card"><h2>${s.ratio}</h2><p class="muted">${s.statusText}</p><div class="bars">${bars}</div></section>
-    <section class="card"><p class="muted">Сумма делится на число дней, которые не отмечены как «-», умноженное на норму. Пустая ячейка входит в план и в «Пров. в день».</p></section>`;
+    <section class="card"><p class="muted">Сумма делится на число дней, которые не отмечены как «-», умноженное на норму. Пустая ячейка входит в план и в «Пров. в день».</p><div class="formula">${s.ratio}<br>${s.statusText}</div></section>`;
   document.getElementById("view-more").innerHTML = `
     <section class="card">
       <h2>Норма</h2>
