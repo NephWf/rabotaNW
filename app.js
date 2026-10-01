@@ -39,10 +39,9 @@ function record() {
   if (!db[key]) db[key] = { norm: 200, days: {} };
   return db[key];
 }
-function valueOf(id, weekday) {
+function valueOf(id) {
   const stored = record().days[id];
-  if (stored !== undefined) return stored;
-  return weekday === 0 || weekday === 6 ? "-" : "";
+  return stored === undefined ? "" : stored;
 }
 function summarize() {
   const rec = record();
@@ -51,7 +50,7 @@ function summarize() {
   for (let d = 1; d <= total; d++) {
     const date = new Date(cursor.y, cursor.m, d);
     const id = iso(cursor.y, cursor.m, d);
-    rows.push({ d, id, wd: date.getDay(), raw: valueOf(id, date.getDay()) });
+    rows.push({ d, id, wd: date.getDay(), weekend: date.getDay() === 0 || date.getDay() === 6, raw: valueOf(id) });
   }
   const sum = rows.filter((r) => typeof r.raw === "number").reduce((a, r) => a + r.raw, 0);
   const offs = rows.filter((r) => r.raw === "-").length;
@@ -105,13 +104,13 @@ function render() {
     days.innerHTML = s.rows.map((row) => {
       const delta = typeof row.raw === "number" ? row.raw - rec.norm : null;
       const deltaClass = delta === null ? "na" : delta >= 0 ? "up" : "down";
-      const deltaText = delta === null ? (row.raw === "-" ? "выходной" : "открыт") : (delta > 0 ? "+" : "") + delta;
-      return `<div class="day ${row.raw === "-" ? "off" : ""}">
+      const deltaText = row.raw === "-" ? "не в плане" : delta === null ? "открыт" : (delta > 0 ? "+" : "") + delta;
+      return `<div class="day ${row.weekend ? "weekend" : ""} ${row.raw === "-" ? "dash" : ""}">
         <div class="date">${String(row.d).padStart(2, "0")}.${String(cursor.m + 1).padStart(2, "0")}</div>
-        <div class="wd">${WEEKDAYS[row.wd]}</div>
+        <div class="wd">${row.weekend ? "выходной" : WEEKDAYS[row.wd]}</div>
         <input data-day="${row.id}" value="${row.raw === "" ? "" : row.raw}" placeholder="пусто" inputmode="decimal" />
         <div class="delta ${deltaClass}">${deltaText}</div>
-        <button class="mini ${row.raw === "-" ? "on" : ""}" data-off="${row.id}" type="button" title="Выходной">−</button>
+        <button class="mini ${row.raw === "-" ? "on" : ""}" data-off="${row.id}" type="button">прочерк</button>
       </div>`;
     }).join("");
   }

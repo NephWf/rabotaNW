@@ -12,7 +12,7 @@
   <link rel="manifest" href="manifest.json" />
   <link rel="apple-touch-icon" href="icon-180.png" />
   <link rel="icon" type="image/svg+xml" href="favicon.svg" />
-  <link rel="stylesheet" href="styles.css?v=7" />
+  <link rel="stylesheet" href="styles.css?v=8" />
 </head>
 <body>
   <div class="wrap">
@@ -42,13 +42,13 @@
           <span>План <b id="plan">0</b></span>
           <span>В зачёте <b id="counted">0</b></span>
           <span>Пустых <b id="empty">0</b></span>
-          <span>Выходных <b id="offs">0</b></span>
+          <span>Прочерки <b id="offs">0</b></span>
         </div>
       </article>
       <section class="card" style="margin-top:16px">
         <div class="side-title">
           <p class="kicker">Дни</p>
-          <span class="note" style="margin:0">Число — факт. «-» — выходной. Пусто — день ещё открыт.</span>
+          <span class="note" style="margin:0">Число — факт. Прочерк — другая задача, не в плане.</span>
         </div>
         <div class="days" id="days"></div>
       </section>
@@ -80,6 +80,6 @@
     <div class="sheet-panel"><div class="sheet-handle"></div><div id="sheet-body"></div></div>
   </div>
   <input id="import-file" class="hidden" type="file" accept="application/json" />
-  <script src="app.js?v=7"></script>
+  <script src="app.js?v=8"></script>
 </body>
 </html>
