@@ -65,20 +65,26 @@ h2 { margin: 0 0 8px; font-size: 18px; letter-spacing: -0.03em; }
 .day:hover { background: #faf7f1; }
 .day.weekend { background: var(--accent-soft); color: var(--accent); }
 .day.weekend:hover { background: #d7eee4; }
-.day.weekend.banner { grid-template-columns: 92px 36px 1fr; }
+.day.weekend.banner { grid-template-columns: 92px 88px minmax(90px, 1fr) 88px auto; }
 .weekend-label {
-  text-align: center;
-  font-weight: 800;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
+  grid-column: 3;
+  display: flex;
+  align-items: center;
+  min-height: 38px;
+  padding: 8px 10px;
+  font: inherit;
+  font-weight: 700;
+  font-size: 16px;
+  letter-spacing: 0;
+  text-transform: none;
   color: var(--accent);
-  font-size: 18px;
 }
 .day.dash { opacity: 0.85; }
 .day .date { font-weight: 750; }
 .day .wd { font-size: 13px; text-transform: lowercase; color: var(--muted); }
 .day.weekend .wd { color: var(--accent); font-weight: 700; }
-.day input { width: 100%; border: 1px solid var(--line); background: #fff; border-radius: 10px; padding: 8px 10px; font-weight: 700; outline: none; color: var(--ink); }
+.day input { width: 100%; border: 1px solid var(--line); background: #fff; border-radius: 10px; padding: 8px 10px; font-weight: 700; font-size: 16px; outline: none; color: var(--ink); }
+.day input::placeholder { color: #b7b1a6; font-weight: 700; }
 .day input:focus { border-color: #b7cfc4; box-shadow: 0 0 0 3px rgba(14, 107, 82, 0.12); }
 .day.dash input { background: #f4f1ea; color: var(--off); }
 .delta { min-width: 64px; text-align: right; font-weight: 700; font-size: 13px; }
@@ -107,7 +113,6 @@ h2 { margin: 0 0 8px; font-size: 18px; letter-spacing: -0.03em; }
 .sheet-panel { position: absolute; left: 50%; bottom: 0; transform: translateX(-50%); width: min(520px, 100%); background: var(--paper); border: 1px solid var(--line); border-radius: 18px 18px 0 0; padding: 12px 20px max(20px, env(safe-area-inset-bottom)); box-shadow: var(--shadow); }
 .sheet-handle { width: 40px; height: 4px; border-radius: 99px; background: var(--line); margin: 0 auto 12px; }
 @media (max-width: 640px) {
-  .day { grid-template-columns: 58px 28px minmax(64px, 1fr) 64px auto; gap: 6px; }
-  .day.weekend.banner { grid-template-columns: 58px 28px 1fr; }
-  .weekend-label { font-size: 15px; letter-spacing: 0.1em; }
+  .day, .day.weekend.banner { grid-template-columns: 58px 28px minmax(64px, 1fr) 64px auto; gap: 6px; }
+  .weekend-label { font-size: 16px; letter-spacing: 0; }
 }
