@@ -154,6 +154,52 @@ function openSheet(html) {
   document.getElementById("sheet-body").innerHTML = html;
   document.getElementById("sheet").classList.remove("hidden");
 }
+function downloadPng() {
+  const s = summarize();
+  const rows = s.rows.filter((row) => !row.weekend && row.raw !== "");
+  const title = MONTHS[cursor.m] + " " + String(cursor.y).slice(2);
+  const lines = rows.map((row) => ({
+    date: String(row.d).padStart(2, "0") + "." + String(cursor.m + 1).padStart(2, "0") + "." + cursor.y,
+    value: row.raw === "" ? "" : String(row.raw)
+  }));
+  lines.push({ date: s.ratio, value: "" });
+  lines.push({ date: s.statusText, value: "" });
+  const width = 640;
+  const rowH = 42;
+  const headH = 64;
+  const height = headH + lines.length * rowH + 16;
+  const canvas = document.createElement("canvas");
+  canvas.width = width * 2;
+  canvas.height = height * 2;
+  const ctx = canvas.getContext("2d");
+  ctx.scale(2, 2);
+  ctx.fillStyle = "#ffffff";
+  ctx.fillRect(0, 0, width, height);
+  ctx.strokeStyle = "#d7dbe3";
+  ctx.lineWidth = 1;
+  ctx.fillStyle = "#111111";
+  ctx.font = "700 28px Segoe UI, Arial, sans-serif";
+  ctx.textBaseline = "middle";
+  ctx.fillText(title, 18, 32);
+  ctx.font = "400 18px Segoe UI, Arial, sans-serif";
+  lines.forEach((line, index) => {
+    const y = headH + index * rowH;
+    ctx.strokeRect(12, y, width - 24, rowH);
+    ctx.fillStyle = "#111111";
+    ctx.font = index >= lines.length - 2 ? "700 18px Segoe UI, Arial, sans-serif" : "400 18px Segoe UI, Arial, sans-serif";
+    ctx.fillText(line.date, 24, y + rowH / 2);
+    if (line.value) {
+      ctx.textAlign = "right";
+      ctx.fillText(line.value, width - 28, y + rowH / 2);
+      ctx.textAlign = "left";
+    }
+  });
+  const link = document.createElement("a");
+  link.href = canvas.toDataURL("image/png");
+  link.download = title.replace(" ", "-") + ".png";
+  link.click();
+}
+document.getElementById("download-png").addEventListener("click", downloadPng);
 document.getElementById("norm").addEventListener("change", () => {
   const n = Number(document.getElementById("norm").value);
   record().norm = Number.isFinite(n) && n > 0 ? n : 200;
