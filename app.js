@@ -54,8 +54,9 @@ function summarize() {
   }
   const sum = rows.filter((r) => typeof r.raw === "number").reduce((a, r) => a + r.raw, 0);
   const offs = rows.filter((r) => r.raw === "-").length;
-  const blanks = rows.filter((r) => r.raw === "").length;
-  const counted = rows.length - offs;
+  const weekends = rows.filter((r) => r.weekend && r.raw !== "-").length;
+  const blanks = rows.filter((r) => r.raw === "" && !r.weekend).length;
+  const counted = rows.filter((r) => !r.weekend && r.raw !== "-").length;
   const plan = counted * rec.norm;
   const extra = sum - plan;
   let statusText, kind, perDay = null;
@@ -67,7 +68,7 @@ function summarize() {
     statusText = "Излишек за месяц: " + extra;
     kind = extra >= 0 ? "good" : "bad";
   }
-  return { rows, sum, plan, counted, blanks, offs, statusText, kind, ratio: sum + "/" + plan, extra };
+  return { rows, sum, plan, counted, blanks, offs, weekends, statusText, kind, ratio: sum + "/" + plan, extra };
 }
 function setDay(id, raw) {
   const text = String(raw).trim().replace(",", ".");
@@ -98,6 +99,7 @@ function render() {
   document.getElementById("plan").textContent = s.plan;
   document.getElementById("counted").textContent = s.counted;
   document.getElementById("empty").textContent = s.blanks;
+  document.getElementById("weekends").textContent = s.weekends;
   document.getElementById("offs").textContent = s.offs;
   const days = document.getElementById("days");
   if (days) {
