@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Прогресс по работе</title>
+<style>
+  :root {
+    --bg: #f3efe6;
+    --paper: #fffdf8;
+    --ink: #1c1915;
+    --muted: #6f685e;
+    --line: #e4ddd0;
+    --accent: #0e6b52;
+    --accent-soft: #e5f4ee;
+    --warn: #9a4d12;
+    --warn-soft: #f8efe4;
+    --bad: #9d2c20;
+    --bad-soft: #f8eae7;
+    --off: #8a847a;
+    --shadow: 0 18px 40px rgba(60, 42, 20, 0.08);
+    --radius: 18px;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: "Segoe UI", "Manrope", "Helvetica Neue", sans-serif;
+    background:
+      radial-gradient(1200px 500px at 10% -10%, #efe4cf 0%, transparent 55%),
+      radial-gradient(900px 400px at 100% 0%, #e7f0ea 0%, transparent 50%),
+      var(--bg);
+    color: var(--ink);
+    min-height: 100vh;
+  }
+  .wrap { max-width: 1080px; margin: 0 auto; padding: 28px 18px 64px; }
+  header.top {
+    display: flex; justify-content: space-between; gap: 18px; align-items: flex-end;
+    margin-bottom: 22px; flex-wrap: wrap;
+  }
+  h1 { font-size: 32px; letter-spacing: -0.04em; margin: 0 0 6px; font-weight: 750; }
+  .sub { color: var(--muted); margin: 0; max-width: 560px; line-height: 1.45; }
+  .nav {
+    display: flex; align-items: center; gap: 8px; background: var(--paper);
+    border: 1px solid var(--line); border-radius: 999px; padding: 6px; box-shadow: var(--shadow);
+  }
+  .nav button, .ghost, .primary, .mini {
+    border: 0; cursor: pointer; font: inherit;
+  }
+  .nav button {
+    width: 36px; height: 36px; border-radius: 50%; background: transparent; color: var(--ink);
+  }
+  .nav button:hover, .ghost:hover, .mini:hover { background: #f3eee4; }
+  .nav strong { min-width: 168px; text-align: center; font-size: 16px; }
+  .controls { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+  .norm {
+    display: flex; align-items: center; gap: 8px; background: var(--paper);
+    border: 1px solid var(--line); border-radius: 999px; padding: 8px 12px; box-shadow: var(--shadow);
+  }
+  .norm input {
+    width: 72px; border: 0; background: transparent; font: inherit; font-weight: 700; color: var(--ink);
+    outline: none;
+  }
+  .grid { display: grid; grid-template-columns: 1.15fr 0.85fr; gap: 16px; }
+  @media (max-width: 860px) { .grid { grid-template-columns: 1fr; } h1 { font-size: 26px; } }
+  .card {
+    background: var(--paper); border: 1px solid var(--line); border-radius: var(--radius);
+    box-shadow: var(--shadow); padding: 18px;
+  }
+  .kicker { color: var(--muted); font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; margin: 0 0 8px; }
+  .ratio { font-size: 54px; letter-spacing: -0.05em; font-weight: 760; margin: 0; line-height: 0.95; }
+  .ratio span { color: var(--muted); font-weight: 650; }
+  .status {
+    display: inline-flex; align-items: center; gap: 8px; margin-top: 14px;
+    padding: 8px 12px; border-radius: 999px; font-weight: 700;
+  }
+  .status.good { background: var(--accent-soft); color: var(--accent); }
+  .status.bad { background: var(--bad-soft); color: var(--bad); }
+  .status.wait { background: var(--warn-soft); color: var(--warn); }
+  .bar { height: 14px; background: #efe8dc; border-radius: 999px; overflow: hidden; margin: 16px 0 8px; }
+  .bar > i { display: block; height: 100%; width: 0; background: linear-gradient(90deg, #0e6b52, #2f9b78); border-radius: inherit; }
+  .meta { display: flex; gap: 16px; color: var(--muted); font-size: 14px; flex-wrap: wrap; }
+  .meta b { color: var(--ink); }
+  .formula {
+    margin-top: 14px; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 12px; color: var(--muted); background: #f7f3eb; border-radius: 12px; padding: 10px 12px; line-height: 1.5;
+  }
+  .days { display: flex; flex-direction: column; gap: 8px; }
+  .day {
+    display: grid; grid-template-columns: 92px 36px minmax(90px, 1fr) 78px auto; gap: 10px; align-items: center;
+    padding: 8px 10px; border-radius: 14px; border: 1px solid transparent;
+  }
+  .day:hover { background: #faf7f1; }
+  .day.off { opacity: 0.72; }
+  .day .date { font-weight: 750; }
+  .day .wd { color: var(--muted); font-size: 13px; text-transform: lowercase; }
+  .day input[type="text"] {
+    width: 100%; border: 1px solid var(--line); background: #fff; border-radius: 10px;
+    padding: 8px 10px; font: inherit; font-weight: 700; outline: none;
+  }
+  .day input:focus { border-color: #b7cfc4; box-shadow: 0 0 0 3px rgba(14, 107, 82, 0.12); }
+  .day.off input { background: #f4f1ea; color: var(--off); }
+  .delta { min-width: 64px; text-align: right; font-weight: 700; font-size: 13px; }
+  .delta.up { color: var(--accent); }
+  .delta.down { color: var(--bad); }
+  .delta.na { color: var(--off); font-weight: 600; }
+  .row-actions { display: flex; gap: 6px; }
+  .mini {
+    border-radius: 9px; padding: 7px 9px; background: transparent; color: var(--muted); border: 1px solid var(--line);
+  }
+  .mini.on { background: #efe8dc; color: var(--ink); }
+  .chart { display: flex; align-items: flex-end; gap: 6px; height: 120px; margin-top: 8px; }
+  .chart .col { flex: 1; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; height: 100%; gap: 4px; }
+  .chart .col b {
+    width: 100%; max-width: 28px; border-radius: 7px 7px 3px 3px; background: #d9cbb6; display: block; min-height: 2px;
+  }
+  .chart .col b.over { background: #0e6b52; }
+  .chart .col b.under { background: #c46a4a; }
+  .chart .col span { font-size: 10px; color: var(--muted); }
+  .side-title { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+  .ghost, .primary { border-radius: 999px; padding: 8px 12px; }
+  .ghost { background: transparent; border: 1px solid var(--line); }
+  .primary { background: var(--ink); color: white; }
+  .footer-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 14px; }
+  .note { color: var(--muted); font-size: 13px; line-height: 1.45; margin: 8px 0 0; }
+  .hidden-file { display: none; }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <header class="top">
+      <div>
+        <h1>Прогресс по работе</h1>
+        <p class="sub">Как в таблице: каждый засчитанный день имеет норму, «-» — выходной и не входит в план, пустая ячейка — день ещё не закрыт.</p>
+      </div>
+      <div class="controls">
+        <label class="norm">Норма <input id="norm" type="number" min="1" step="1" value="200" /> / день</label>
+        <div class="nav">
+          <button id="prev" type="button" aria-label="Предыдущий месяц">‹</button>
+          <strong id="monthLabel">Сентябрь 2026</strong>
+          <button id="next" type="button" aria-label="Следующий месяц">›</button>
+        </div>
+      </div>
+    </header>
+
+    <section class="grid">
+      <article class="card">
+        <p class="kicker">Итог месяца</p>
+        <p class="ratio" id="ratio">0<span>/0</span></p>
+        <div class="status wait" id="status">Пров. в день: 0</div>
+        <div class="bar" aria-hidden="true"><i id="bar"></i></div>
+        <div class="meta">
+          <span>Сумма <b id="sum">0</b></span>
+          <span>План <b id="plan">0</b></span>
+          <span>В зачёте <b id="counted">0</b></span>
+          <span>Пустых <b id="empty">0</b></span>
+          <span>Выходных <b id="offs">0</b></span>
+        </div>
+        <div class="formula" id="formula"></div>
+        <p class="note" id="hint"></p>
+      </article>
+      <article class="card">
+        <div class="side-title">
+          <p class="kicker">По дням к норме</p>
+          <span class="note" id="chartHint" style="margin:0"></span>
+        </div>
+        <div class="chart" id="chart"></div>
+        <div class="footer-actions">
+          <button class="ghost" id="fillOffWeekends" type="button">Выходные как «-»</button>
+          <button class="ghost" id="exportBtn" type="button">Скачать JSON</button>
+          <button class="ghost" id="importBtn" type="button">Загрузить JSON</button>
+          <button class="primary" id="resetMonth" type="button">Сбросить месяц</button>
+          <input id="importFile" class="hidden-file" type="file" accept="application/json" />
+        </div>
+      </article>
+    </section>
+
+    <section class="card" style="margin-top:16px">
+      <div class="side-title">
+        <p class="kicker">Дни</p>
+        <span class="note" style="margin:0">Число — факт. «-» — выходной. Пусто — день ещё открыт.</span>
+      </div>
+      <div class="days" id="days"></div>
+    </section>
+  </div>
+<script>
+const MONTHS = ["Январь","Февраль","Март","Апрель","Май","Июнь","Июль","Август","Сентябрь","Октябрь","Ноябрь","Декабрь"];
+const WD = ["вс","пн","вт","ср","чт","пт","сб"];
+const STORAGE = "work-progress-v1";
+
+const seed = {
+  "2026-09": {
+    norm: 200,
+    days: {
+      "2026-09-01": "-", "2026-09-02": "-", "2026-09-03": "-", "2026-09-04": "-",
+      "2026-09-05": "-", "2026-09-06": "-",
+      "2026-09-07": 212, "2026-09-08": 219, "2026-09-09": 222, "2026-09-10": 220, "2026-09-11": 217,
+      "2026-09-12": "-", "2026-09-13": "-",
+      "2026-09-14": 229, "2026-09-15": 224, "2026-09-16": 204, "2026-09-17": "-", "2026-09-18": 212,
+      "2026-09-19": "-", "2026-09-20": "-",
+      "2026-09-21": "-", "2026-09-22": "-", "2026-09-23": "-", "2026-09-24": 222, "2026-09-25": 228,
+      "2026-09-26": "-", "2026-09-27": "-",
+      "2026-09-28": "-", "2026-09-29": "-", "2026-09-30": 211
+    }
+  }
+};
+
+let db = load();
+let cursor = { y: 2026, m: 8 };
+
+function load() {
+  try {
+    const raw = localStorage.getItem(STORAGE);
+    if (raw) return JSON.parse(raw);
+  } catch (e) {}
+  return structuredClone(seed);
+}
+function save() { localStorage.setItem(STORAGE, JSON.stringify(db)); }
+function keyOf(y, m) { return y + "-" + String(m + 1).padStart(2, "0"); }
+function pad(n) { return String(n).padStart(2, "0"); }
+function iso(y, m, d) { return y + "-" + pad(m + 1) + "-" + pad(d); }
+function daysInMonth(y, m) { return new Date(y, m + 1, 0).getDate(); }
+function excelRound(n) {
+  if (!isFinite(n)) return 0;
+  return Math.sign(n) * Math.round(Math.abs(n));
+}
+
+function monthState() {
+  const key = keyOf(cursor.y, cursor.m);
+  if (!db[key]) db[key] = { norm: 200, days: {} };
+  return db[key];
+}
+
+function valueOf(state, dateIso, weekday) {
+  if (Object.prototype.hasOwnProperty.call(state.days, dateIso)) return state.days[dateIso];
+  if (weekday === 0 || weekday === 6) return "-";
+  return "";
+}
+
+function calc(state) {
+  const n = daysInMonth(cursor.y, cursor.m);
+  const rows = [];
+  for (let d = 1; d <= n; d++) {
+    const date = new Date(cursor.y, cursor.m, d);
+    const id = iso(cursor.y, cursor.m, d);
+    const raw = valueOf(state, id, date.getDay());
+    rows.push({ d, id, wd: date.getDay(), raw });
+  }
+  const numbers = rows.filter(r => typeof r.raw === "number");
+  const offs = rows.filter(r => r.raw === "-");
+  const empty = rows.filter(r => r.raw === "" || r.raw === null || r.raw === undefined);
+  const sum = numbers.reduce((a, r) => a + r.raw, 0);
+  const nonDash = rows.length - offs.length;
+  const plan = nonDash * state.norm;
+  const blanks = empty.length;
+  let statusText, kind;
+  if (blanks !== 0) {
+    const per = excelRound((plan - sum) / blanks);
+    statusText = "Пров. в день: " + per;
+    kind = per <= state.norm ? "good" : "wait";
+    if (per < 0) kind = "good";
+  } else {
+    const extra = sum - plan;
+    statusText = "Излишек за месяц: " + extra;
+    kind = extra >= 0 ? "good" : "bad";
+  }
+  return { rows, sum, plan, nonDash, blanks, offs: offs.length, statusText, kind, ratio: sum + "/" + plan };
+}
+
+function render() {
+  const state = monthState();
+  document.getElementById("monthLabel").textContent = MONTHS[cursor.m] + " " + cursor.y;
+  document.getElementById("norm").value = state.norm;
+  const c = calc(state);
+  document.getElementById("ratio").innerHTML = c.sum + "<span>/" + c.plan + "</span>";
+  const status = document.getElementById("status");
+  status.textContent = c.statusText;
+  status.className = "status " + c.kind;
+  document.getElementById("sum").textContent = c.sum;
+  document.getElementById("plan").textContent = c.plan;
+  document.getElementById("counted").textContent = c.nonDash;
+  document.getElementById("empty").textContent = c.blanks;
+  document.getElementById("offs").textContent = c.offs;
+  const pct = c.plan ? Math.min(100, Math.round(c.sum / c.plan * 100)) : 0;
+  document.getElementById("bar").style.width = pct + "%";
+  document.getElementById("formula").textContent =
+    "СУММ / (СЧЁТЕСЛИ не «-» × норма) = " + c.ratio + "\n" + c.statusText;
+  document.getElementById("hint").textContent = c.blanks
+    ? "Пока есть пустые дни, вторая формула показывает, сколько нужно делать в каждый оставшийся день, чтобы закрыть план."
+    : "Все дни закрыты. Излишек — это сумма минус план (засчитанные дни × норма).";
+
+  const chart = document.getElementById("chart");
+  chart.innerHTML = "";
+  const counted = c.rows.filter(r => r.raw !== "-");
+  document.getElementById("chartHint").textContent = counted.length ? "только дни в зачёте" : "";
+  counted.forEach(r => {
+    const col = document.createElement("div");
+    col.className = "col";
+    const b = document.createElement("b");
+    const val = typeof r.raw === "number" ? r.raw : 0;
+    const h = Math.max(4, Math.min(100, val / (state.norm * 1.4) * 100));
+    b.style.height = h + "%";
+    if (typeof r.raw === "number") b.className = r.raw >= state.norm ? "over" : "under";
+    const s = document.createElement("span");
+    s.textContent = r.d;
+    col.appendChild(b);
+    col.appendChild(s);
+    chart.appendChild(col);
+  });
+
+  const list = document.getElementById("days");
+  list.innerHTML = "";
+  c.rows.forEach(r => {
+    const row = document.createElement("div");
+    row.className = "day" + (r.raw === "-" ? " off" : "");
+    const date = document.createElement("div");
+    date.className = "date";
+    date.textContent = pad(r.d) + "." + pad(cursor.m + 1);
+    const wd = document.createElement("div");
+    wd.className = "wd";
+    wd.textContent = WD[r.wd];
+    const input = document.createElement("input");
+    input.type = "text";
+    input.inputMode = "numeric";
+    input.value = r.raw === "" ? "" : String(r.raw);
+    input.placeholder = "пусто";
+    input.addEventListener("change", () => setDay(r.id, input.value));
+    const delta = document.createElement("div");
+    if (typeof r.raw === "number") {
+      const diff = r.raw - state.norm;
+      delta.className = "delta " + (diff >= 0 ? "up" : "down");
+      delta.textContent = (diff > 0 ? "+" : "") + diff;
+    } else {
+      delta.className = "delta na";
+      delta.textContent = r.raw === "-" ? "выходной" : "открыт";
+    }
+    const actions = document.createElement("div");
+    actions.className = "row-actions";
+    const off = document.createElement("button");
+    off.type = "button";
+    off.className = "mini" + (r.raw === "-" ? " on" : "");
+    off.textContent = "−";
+    off.title = "Выходной";
+    off.addEventListener("click", () => setDay(r.id, r.raw === "-" ? "" : "-"));
+    const clear = document.createElement("button");
+    clear.type = "button";
+    clear.className = "mini";
+    clear.textContent = "×";
+    clear.title = "Очистить";
+    clear.addEventListener("click", () => setDay(r.id, ""));
+    actions.appendChild(off);
+    actions.appendChild(clear);
+    row.append(date, wd, input, delta, actions);
+    list.appendChild(row);
+  });
+}
+
+function setDay(id, raw) {
+  const state = monthState();
+  const text = String(raw).trim().replace(",", ".");
+  if (text === "" ) state.days[id] = "";
+  else if (text === "-" || text === "—" || text.toLowerCase() === "вых") state.days[id] = "-";
+  else {
+    const n = Number(text);
+    state.days[id] = Number.isFinite(n) ? n : "";
+  }
+  save();
+  render();
+}
+
+document.getElementById("prev").addEventListener("click", () => {
+  cursor.m -= 1;
+  if (cursor.m < 0) { cursor.m = 11; cursor.y -= 1; }
+  render();
+});
+document.getElementById("next").addEventListener("click", () => {
+  cursor.m += 1;
+  if (cursor.m > 11) { cursor.m = 0; cursor.y += 1; }
+  render();
+});
+document.getElementById("norm").addEventListener("change", (e) => {
+  const n = Number(e.target.value);
+  monthState().norm = Number.isFinite(n) && n > 0 ? n : 200;
+  save();
+  render();
+});
+document.getElementById("fillOffWeekends").addEventListener("click", () => {
+  const state = monthState();
+  const n = daysInMonth(cursor.y, cursor.m);
+  for (let d = 1; d <= n; d++) {
+    const date = new Date(cursor.y, cursor.m, d);
+    if (date.getDay() === 0 || date.getDay() === 6) state.days[iso(cursor.y, cursor.m, d)] = "-";
+  }
+  save();
+  render();
+});
+document.getElementById("resetMonth").addEventListener("click", () => {
+  if (!confirm("Сбросить текущий месяц?")) return;
+  db[keyOf(cursor.y, cursor.m)] = { norm: 200, days: {} };
+  save();
+  render();
+});
+document.getElementById("exportBtn").addEventListener("click", () => {
+  const blob = new Blob([JSON.stringify(db, null, 2)], { type: "application/json" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "progress.json";
+  a.click();
+  URL.revokeObjectURL(a.href);
+});
+document.getElementById("importBtn").addEventListener("click", () => document.getElementById("importFile").click());
+document.getElementById("importFile").addEventListener("change", async (e) => {
+  const file = e.target.files && e.target.files[0];
+  if (!file) return;
+  try {
+    db = JSON.parse(await file.text());
+    save();
+    render();
+  } catch (err) {
+    alert("Не получилось прочитать JSON");
+  }
+  e.target.value = "";
+});
+
+render();
+</script>
+</body>
+</html>
