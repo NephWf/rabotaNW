@@ -1,4 +1,4 @@
-const CACHE = "rabota-nw-v4";
+const CACHE = "rabota-nw-v5";
 const ASSETS = ["./", "./index.html", "./styles.css", "./app.js", "./manifest.json", "./favicon.svg", "./icon-180.png", "./icon-192.png", "./icon-512.png", "./icon-maskable.png"];
 
 self.addEventListener("install", (event) => {

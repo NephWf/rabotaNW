@@ -100,10 +100,6 @@ function render() {
   document.getElementById("counted").textContent = s.counted;
   document.getElementById("empty").textContent = s.blanks;
   document.getElementById("offs").textContent = s.offs;
-  document.getElementById("formula").textContent = "СУММ / (не «-» × норма) = " + s.ratio + "\n" + s.statusText;
-  document.getElementById("hint").textContent = s.blanks
-    ? "Пока есть пустые дни, вторая формула показывает, сколько нужно делать в каждый оставшийся день, чтобы закрыть план."
-    : "Все дни закрыты. Излишек — это сумма минус план (засчитанные дни × норма).";
   const chart = document.getElementById("chart");
   chart.innerHTML = "";
   s.rows.filter((row) => row.raw !== "-").forEach((row) => {
